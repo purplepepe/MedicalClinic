@@ -1,6 +1,8 @@
 package com.maksles.medicalclinic.service;
 
-import com.maksles.medicalclinic.dto.CreatePatientRequest;
+import com.maksles.medicalclinic.dto.ChangePasswordCommand;
+import com.maksles.medicalclinic.dto.UpdatePatientCommand;
+import com.maksles.medicalclinic.dto.CreatePatientCommand;
 import com.maksles.medicalclinic.exception.*;
 import com.maksles.medicalclinic.model.Patient;
 import com.maksles.medicalclinic.model.User;
@@ -30,7 +32,7 @@ public class PatientService {
     }
 
     @Transactional
-    public Patient addPatient(CreatePatientRequest request) {
+    public Patient addPatient(CreatePatientCommand request) {
         // walidacje przed zapytaniami do bazy
         if (isBlank(request.email())) {
             throw new PatientValidationException("Email jest wymagany");
@@ -77,35 +79,16 @@ public class PatientService {
     }
 
    @Transactional
-   public Patient updatePatient(String email, Patient updatedPatient) {
+   public Patient updatePatient(String email, UpdatePatientCommand command) {
         Patient existing = findPatientOrThrow(email);
-
-        if (updatedPatient.getIdCardNo() != null
-            && !updatedPatient.getIdCardNo().equals(existing.getIdCardNo())){
-            throw new PatientValidationException("Numer dowodu nie może zostać zmieniony");
-        }
-
-        existing.setFirstName(updatedPatient.getFirstName());
-        existing.setLastName(updatedPatient.getLastName());
-        existing.setPhoneNumber(updatedPatient.getPhoneNumber());
-        existing.setBirthday(updatedPatient.getBirthday());
+        existing.update(command);
         return existing;
    }
 
    @Transactional
-    public void changePassword(String email, String oldPassword, String newPassword) {
-        if (isBlank(newPassword)) {
-            throw new PatientValidationException("Hasło nie może zostać puste");
-        }
+    public void changePassword(String email, ChangePasswordCommand command) {
         Patient patient = findPatientOrThrow(email);
-
-        if (!patient.getPassword().equals(oldPassword)) {
-            throw new InvalidPasswordException();
-        }
-        if (newPassword.equals(oldPassword)) {
-            throw new PatientValidationException("Nowe hasło musi róznić się od obecnego");
-        }
-        patient.setPassword(newPassword); //UPDATE wykona się sam przy końcu transkacji
+        patient.changePassword(command);
    }
 
    //wspólna logika wyszukiwania używana wewnątrz serwsisu

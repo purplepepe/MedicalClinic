@@ -4,7 +4,7 @@ import com.maksles.medicalclinic.model.Patient;
 
 import java.time.LocalDate;
 
-public record PatientResponse(
+public record PatientDto(
         Long id,
         String email,
         String idCardNo,
@@ -15,8 +15,8 @@ public record PatientResponse(
         UserResponse user
 ) {
 
-    public static PatientResponse from(Patient patient) {
-        return new PatientResponse(
+    public static PatientDto from(Patient patient) {
+        return new PatientDto(
                 patient.getId(),
                 patient.getEmail(),
                 patient.getIdCardNo(),

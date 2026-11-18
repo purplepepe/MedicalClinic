@@ -1,5 +1,5 @@
 package com.maksles.medicalclinic.dto;
 
 // record = niezmienna klasa na dane a jackson sam zmapuje {"password": "..."}
-public record ChangePasswordRequest(String oldPassword, String newPassword) {
+public record ChangePasswordCommand(String oldPassword, String newPassword) {
 }

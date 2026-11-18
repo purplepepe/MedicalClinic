@@ -2,7 +2,7 @@ package com.maksles.medicalclinic.dto;
 
 import java.time.LocalDate;
 
-public record CreatePatientRequest(
+public record CreatePatientCommand(
         String email,
         String password,
         String idCardNo,
