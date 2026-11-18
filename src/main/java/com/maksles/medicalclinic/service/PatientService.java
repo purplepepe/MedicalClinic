@@ -1,10 +1,14 @@
 package com.maksles.medicalclinic.service;
 
-import com.maksles.medicalclinic.exception.PatientAlreadyExistsException;
-import com.maksles.medicalclinic.exception.PatientNotFoundException;
-import com.maksles.medicalclinic.exception.PatientValidationException;
+import com.maksles.medicalclinic.dto.ChangePasswordCommand;
+import com.maksles.medicalclinic.dto.UpdatePatientCommand;
+import com.maksles.medicalclinic.dto.CreatePatientCommand;
+import com.maksles.medicalclinic.exception.*;
 import com.maksles.medicalclinic.model.Patient;
+import com.maksles.medicalclinic.model.User;
 import com.maksles.medicalclinic.repository.PatientRepository;
+import com.maksles.medicalclinic.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -15,59 +19,82 @@ import java.util.List;
 public class PatientService {
 
     private final PatientRepository repository;
+    private final UserRepository userRepository;
 
     //wyswietlenie danych wszystkich pacjentow
     public List<Patient> getPatients() {
-        return repository.getPatients();
+        return repository.findAll();
     }
 
     //wyswietlenie danych konkretnego pacjenta poprzez email
     public Patient getPatient(String email) {
-        return repository.findByEmail(email)
-                .orElseThrow(() -> new PatientNotFoundException(email));
+       return findPatientOrThrow(email);
     }
 
-    //MED-997 pkt 2: dwoch pacjentów nie może mieć tego samego maila
-    public Patient addPatient(Patient patient) {
-        if (isBlank(patient.getEmail())) {
-            throw new PatientValidationException("Email is required");
+    @Transactional
+    public Patient addPatient(CreatePatientCommand request) {
+        // walidacje przed zapytaniami do bazy
+        if (isBlank(request.email())) {
+            throw new PatientValidationException("Email jest wymagany");
         }
-        //findByEmail porownuje porownuje bez wielkosci liter
-        if (repository.findByEmail(patient.getEmail()).isPresent()) {
-            throw new PatientAlreadyExistsException(patient.getEmail());
+        if (request.userId() == null) {
+            throw new PatientValidationException("Użytkownik jest wymagany");
         }
+
+        // unikalny email
+        if (repository.findByEmailIgnoreCase(request.email()).isPresent()) {
+            throw new PatientAlreadyExistsException(request.email());
+        }
+
+        //user musi istnieć
+        User user = userRepository.findById(request.userId())
+                .orElseThrow(() -> new UserNotFoundException(request.userId()));
+
+        //relacja 1:1 - user nie może należeć juz do innego pacjenta
+        if (repository.existsByUserId(user.getId())) {
+            throw new UserAssignedToPatientException(
+                    "Użytkownik o id " + user.getId() + " jest przypisany do innego pacjenta"
+            );
+        }
+
+        //budujemy encję z DTO, id ustawi baza
+        Patient patient = new Patient();
+        patient.setEmail(request.email());
+        patient.setPassword(request.password());
+        patient.setIdCardNo(request.idCardNo());
+        patient.setFirstName(request.firstName());
+        patient.setLastName(request.lastName());
+        patient.setPhoneNumber(request.phoneNumber());
+        patient.setBirthday(request.birthday());
+        patient.setUser(user);
+
         return repository.save(patient);
     }
 
-    //usuniecie konkretnego pacjenta poprzez email
-    public void deletePaTient(String email) {
-        if (!repository.deleteByEmail(email)) {
+    @Transactional
+    public void deletePatient(String email) {
+        if(repository.deleteByEmailIgnoreCase(email) == 0){
             throw new PatientNotFoundException(email);
         }
     }
 
-    // edycja nie zmienia emaila (identyfikator), hasła (osobny endpoint), dowodu (MED-997 pkt 1)
-    public Patient updatePatient(String email, Patient updatedPatient) {
-        Patient existing = getPatient(email);
-
-        //proba podmiany numeru dowodu konczy sie bledem zamiast zignorowania
-        if (updatedPatient.getIdCardNo() != null && !updatedPatient.getIdCardNo().equals(existing.getIdCardNo())) {
-            throw new PatientValidationException("ID card number cannot be changed");
-        }
-        existing.setFirstName(updatedPatient.getFirstName());
-        existing.setLastName(updatedPatient.getLastName());
-        existing.setPhoneNumber(updatedPatient.getPhoneNumber());
-        existing.setBirthday(updatedPatient.getBirthday());
+   @Transactional
+   public Patient updatePatient(String email, UpdatePatientCommand command) {
+        Patient existing = findPatientOrThrow(email);
+        existing.update(command);
         return existing;
-    }
+   }
 
-    //jedyne miejsce w systemie gdzie mozna zmienic haslo
-    public void changePassword(String email, String newPassword) {
-        if (isBlank(newPassword)) {
-            throw new PatientValidationException("Password cannot be empty");
-        }
-        Patient patient = getPatient(email);
-        patient.setPassword(newPassword);
+   @Transactional
+    public void changePassword(String email, ChangePasswordCommand command) {
+        Patient patient = findPatientOrThrow(email);
+        patient.changePassword(command);
+   }
+
+   //wspólna logika wyszukiwania używana wewnątrz serwsisu
+    private Patient findPatientOrThrow(String email) {
+        return repository.findByEmailIgnoreCase(email)
+                .orElseThrow(() -> new PatientNotFoundException(email));
     }
 
     private boolean isBlank(String value) {
