@@ -5,7 +5,6 @@ import com.maksles.medicalclinic.dto.CreatePatientCommand;
 import com.maksles.medicalclinic.dto.PatientDto;
 import com.maksles.medicalclinic.dto.UpdatePatientCommand;
 import com.maksles.medicalclinic.mapper.PatientMapper;
-import com.maksles.medicalclinic.model.Patient;
 import com.maksles.medicalclinic.service.PatientService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -44,7 +43,7 @@ public class PatientController {
         return patientMapper.toDto(patientService.updatePatient(id, command));
     }
 
-    @PatchMapping("/{email}/password")
+    @PatchMapping("/{id}/password")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void changePassword(@PathVariable Long id, @RequestBody ChangePasswordCommand command) {
         patientService.changePassword(id, command);

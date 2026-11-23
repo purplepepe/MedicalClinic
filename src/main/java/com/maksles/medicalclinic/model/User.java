@@ -1,6 +1,5 @@
 package com.maksles.medicalclinic.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.maksles.medicalclinic.dto.CreateUserCommand;
 import com.maksles.medicalclinic.dto.UpdateUserCommand;
 import com.maksles.medicalclinic.exception.ValidationException;
@@ -13,9 +12,7 @@ import lombok.Setter;
 @Entity
 @Table(name = "users")
 @Getter
-@Setter
 @NoArgsConstructor
-@AllArgsConstructor
 public class User {
 
     @Id

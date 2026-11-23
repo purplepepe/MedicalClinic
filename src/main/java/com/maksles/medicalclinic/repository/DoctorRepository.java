@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface DoctorRepository extends JpaRepository<Doctor, Long> {
 
-    boolean existsByEmailIngoreCase(String email);
+    boolean existsByEmailIgnoreCase(String email);
 
     @Override
     @EntityGraph(attributePaths = "facilities")

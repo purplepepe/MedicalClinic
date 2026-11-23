@@ -41,7 +41,7 @@ public class DoctorService {
     }
 
     private void validateEmailNotTaken(String email) {
-        if (doctorRepository.existsByEmailIngoreCase(email)) {
+        if (doctorRepository.existsByEmailIgnoreCase(email)) {
             throw new DoctorAlreadyExistsException(email);
         }
     }

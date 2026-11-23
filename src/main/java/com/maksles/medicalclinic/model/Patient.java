@@ -1,23 +1,20 @@
 package com.maksles.medicalclinic.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.maksles.medicalclinic.dto.ChangePasswordCommand;
 import com.maksles.medicalclinic.dto.CreatePatientCommand;
 import com.maksles.medicalclinic.dto.UpdatePatientCommand;
 import com.maksles.medicalclinic.exception.InvalidPasswordException;
-import com.maksles.medicalclinic.exception.PatientValidationException;
 import com.maksles.medicalclinic.exception.ValidationException;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 
 @Entity
 @Table(name = "patients")
 @Getter
-@Setter
 @NoArgsConstructor
-@AllArgsConstructor
 public class Patient {
 
     @Id
@@ -95,13 +92,13 @@ public class Patient {
 
     private void validatePassword(ChangePasswordCommand command) {
         if (command.newPassword() == null || command.newPassword().isBlank()) {
-            throw new PatientValidationException("New password cannot be empty");
+            throw new ValidationException("New password cannot be empty");
         }
         if(!this.password.equals(command.oldPassword())) {
             throw new InvalidPasswordException();
         }
         if (command.newPassword().equals(command.oldPassword())) {
-            throw new PatientValidationException("New password must be different from the current one");
+            throw new ValidationException("New password must be different from the current one");
         }
     }
 }
