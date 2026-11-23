@@ -1,6 +1,10 @@
 package com.maksles.medicalclinic.controller;
 
+import com.maksles.medicalclinic.dto.CreateUserCommand;
+import com.maksles.medicalclinic.dto.UpdateUserCommand;
+import com.maksles.medicalclinic.dto.UserDto;
 import com.maksles.medicalclinic.dto.UserResponse;
+import com.maksles.medicalclinic.mapper.UserMapper;
 import com.maksles.medicalclinic.model.User;
 import com.maksles.medicalclinic.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -15,33 +19,34 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
+    private final UserMapper userMapper;
 
     @GetMapping
-    public List<UserResponse> getUsers() {
+    public List<UserDto> getUsers() {
         return userService.getUsers().stream()
-                .map(UserResponse::from)
+                .map(userMapper::toDto)
                 .toList();
     }
 
-    @GetMapping("/{username}")
-    public UserResponse getUser(@PathVariable String username) {
-        return UserResponse.from(userService.getUser(username));
+    @GetMapping("/{id}")
+    public UserDto getUser(@PathVariable Long id) {
+        return userMapper.toDto(userService.getUser(id));
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public UserResponse addUser(@RequestBody User user) {
-        return UserResponse.from(userService.addUser(user));
+    public UserDto addUser(@RequestBody CreateUserCommand command) {
+        return userMapper.toDto(userService.addUser(command));
     }
 
-    @PutMapping("/{username}")
-    public UserResponse updateUser(@PathVariable String username, @RequestBody User user) {
-        return UserResponse.from(userService.updateUser(username, user));
+    @PutMapping("/{id}")
+    public UserDto updateUser(@PathVariable Long id, @RequestBody UpdateUserCommand command) {
+        return userMapper.toDto(userService.updateUser(id, command));
     }
 
-    @DeleteMapping("/{username}")
+    @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteUser(@PathVariable String username) {
-        userService.deleteUser(username);
+    public void deleteUser(@PathVariable Long id) {
+        userService.deleteUser(id);
     }
 }

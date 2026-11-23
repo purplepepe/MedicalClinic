@@ -7,6 +7,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 public class InvalidPasswordException extends RuntimeException {
 
     public InvalidPasswordException() {
-        super("Aktualne hasło jest niepoprawne");
+        super("Current password is incorrect");
     }
 }

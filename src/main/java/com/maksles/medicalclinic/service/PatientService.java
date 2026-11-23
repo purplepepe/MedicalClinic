@@ -18,86 +18,66 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PatientService {
 
-    private final PatientRepository repository;
+    private final PatientRepository patientRepository;
     private final UserRepository userRepository;
 
     //wyswietlenie danych wszystkich pacjentow
     public List<Patient> getPatients() {
-        return repository.findAll();
+        return patientRepository.findAll();
     }
 
     //wyswietlenie danych konkretnego pacjenta poprzez email
-    public Patient getPatient(String email) {
-       return findPatientOrThrow(email);
+    public Patient getPatient(Long id) {
+        return findPatientOrThrow(id);
     }
 
     @Transactional
-    public Patient addPatient(CreatePatientCommand request) {
-        // walidacje przed zapytaniami do bazy
-        if (isBlank(request.email())) {
-            throw new PatientValidationException("Email jest wymagany");
-        }
-        if (request.userId() == null) {
-            throw new PatientValidationException("Użytkownik jest wymagany");
-        }
-
-        // unikalny email
-        if (repository.findByEmailIgnoreCase(request.email()).isPresent()) {
-            throw new PatientAlreadyExistsException(request.email());
-        }
-
-        //user musi istnieć
-        User user = userRepository.findById(request.userId())
-                .orElseThrow(() -> new UserNotFoundException(request.userId()));
-
-        //relacja 1:1 - user nie może należeć juz do innego pacjenta
-        if (repository.existsByUserId(user.getId())) {
-            throw new UserAssignedToPatientException(
-                    "Użytkownik o id " + user.getId() + " jest przypisany do innego pacjenta"
-            );
-        }
-
-        //budujemy encję z DTO, id ustawi baza
-        Patient patient = new Patient();
-        patient.setEmail(request.email());
-        patient.setPassword(request.password());
-        patient.setIdCardNo(request.idCardNo());
-        patient.setFirstName(request.firstName());
-        patient.setLastName(request.lastName());
-        patient.setPhoneNumber(request.phoneNumber());
-        patient.setBirthday(request.birthday());
-        patient.setUser(user);
-
-        return repository.save(patient);
+    public Patient addPatient(CreatePatientCommand command) {
+        Patient patient = Patient.create(command);   // walidacja pól, bez zapytań do bazy
+        validateEmailNotTaken(command.email());
+        User user = findUserOrThrow(command.userId());
+        validateUserNotAssigned(user.getId());
+        patient.assignUser(user);
+        return patientRepository.save(patient);
     }
+
+@Transactional
+public Patient updatePatient(Long id, UpdatePatientCommand command) {
+    Patient patient = findPatientOrThrow(id);
+    patient.update(command);
+    return patient;
+}
+
+@Transactional
+public void changePassword(Long id, ChangePasswordCommand command) {
+    Patient patient = findPatientOrThrow(id);
+    patient.changePassword(command);
+}
 
     @Transactional
-    public void deletePatient(String email) {
-        if(repository.deleteByEmailIgnoreCase(email) == 0){
-            throw new PatientNotFoundException(email);
+    public void deletePatient(Long id) {
+        patientRepository.delete(findPatientOrThrow(id));
+    }
+
+    private void validateEmailNotTaken(String email) {
+        if (patientRepository.existsByEmailIgnoreCase(email)) {
+            throw new PatientAlreadyExistsException(email);
         }
     }
 
-   @Transactional
-   public Patient updatePatient(String email, UpdatePatientCommand command) {
-        Patient existing = findPatientOrThrow(email);
-        existing.update(command);
-        return existing;
-   }
-
-   @Transactional
-    public void changePassword(String email, ChangePasswordCommand command) {
-        Patient patient = findPatientOrThrow(email);
-        patient.changePassword(command);
-   }
-
-   //wspólna logika wyszukiwania używana wewnątrz serwsisu
-    private Patient findPatientOrThrow(String email) {
-        return repository.findByEmailIgnoreCase(email)
-                .orElseThrow(() -> new PatientNotFoundException(email));
+    private void validateUserNotAssigned(Long userId) {
+        if (patientRepository.existsByUserId(userId)) {
+            throw new UserAssignedToPatientException(userId);
+        }
     }
 
-    private boolean isBlank(String value) {
-        return value == null || value.isBlank();
+    private Patient findPatientOrThrow(Long id) {
+        return patientRepository.findById(id)
+                .orElseThrow(() -> new PatientNotFoundException(id));
+    }
+
+    private User findUserOrThrow(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException(id));
     }
 }

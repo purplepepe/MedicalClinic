@@ -1,6 +1,9 @@
 package com.maksles.medicalclinic.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.maksles.medicalclinic.dto.CreateUserCommand;
+import com.maksles.medicalclinic.dto.UpdateUserCommand;
+import com.maksles.medicalclinic.exception.ValidationException;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -22,8 +25,31 @@ public class User {
     @Column(nullable = false, unique = true)
     private String username;
 
-    //hasło przyjmujemy w requescie ale nie zwracamy w odpowiedzi
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @Column(nullable = false)
     private String password;
+
+    public static User create(CreateUserCommand command) {
+        validate(command.username(), command.password());
+
+        User user = new User();
+        user.username = command.username();
+        user.password = command.password();
+        return user;
+    }
+
+    public void update(UpdateUserCommand command) {
+        validate(command.username(), command.password());
+
+        this.username = command.username();
+        this.password = command.password();
+    }
+
+    public static void validate(String username, String password) {
+        if (username == null || username.isBlank()) {
+            throw new ValidationException("Username is required");
+        }
+        if (password == null || password.isBlank()) {
+            throw new ValidationException("Password is required");
+        }
+    }
 }

@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @ResponseStatus(HttpStatus.CONFLICT)
 public class PatientAlreadyExistsException extends RuntimeException {
 
-    public PatientAlreadyExistsException(String email) {
-        super("Pacjent o emailu" + email + " już istnieje");
+    public PatientAlreadyExistsException(String email){
+        super("Patient with email " + email + " already eixsts");
     }
 }

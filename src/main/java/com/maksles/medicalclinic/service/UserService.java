@@ -1,13 +1,14 @@
 package com.maksles.medicalclinic.service;
 
+import com.maksles.medicalclinic.dto.CreateUserCommand;
+import com.maksles.medicalclinic.dto.UpdateUserCommand;
 import com.maksles.medicalclinic.exception.UserAlreadyExistsException;
 import com.maksles.medicalclinic.exception.UserAssignedToPatientException;
 import com.maksles.medicalclinic.exception.UserNotFoundException;
-import com.maksles.medicalclinic.exception.UserValidationException;
 import com.maksles.medicalclinic.model.User;
 import com.maksles.medicalclinic.repository.PatientRepository;
 import com.maksles.medicalclinic.repository.UserRepository;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -26,66 +27,56 @@ public class UserService {
     }
 
     //Read: jeden user po nazwie
-    public User getUser(String username) {
-        return findUserOrThrow(username);
+    public User getUser(Long id) {
+        return findUserOrThrow(id);
     }
 
     //Create: oba pola wymagane, nazwa unikalna
     @Transactional
-    public User addUser(User user) {
-        validate(user);
-        if (userRepository.findByUsernameIgnoreCase(user.getUsername()).isPresent()) {
-            throw new UserAlreadyExistsException(user.getUsername());
-        }
-        user.setId(null); // id nadaje baza
+    public User addUser(CreateUserCommand command) {
+        User user = User.create(command);
+        validateUsernameNotTaken(command.username());
         return userRepository.save(user);
     }
 
     //Update: zmiana nazwy i hasła
     @Transactional
-    public User updateUser(String username, User updatedUser) {
-        User existing = findUserOrThrow(username);
-        validate(updatedUser);
-
-        //nowa nazwa nie moze należeć do innego usera (porównujemy po id)
-        userRepository.findByUsernameIgnoreCase(updatedUser.getUsername())
-                .filter(other -> !other.getId().equals(existing.getId()))
-                .ifPresent(other -> {
-                    throw new UserAlreadyExistsException(updatedUser.getUsername());
-                });
-
-        existing.setUsername(updatedUser.getUsername());
-        existing.setPassword(updatedUser.getPassword());
-        return existing;
+    public User updateUser(Long id, UpdateUserCommand command) {
+        User user = findUserOrThrow(id);
+        validateUsernameNotTakenByOtherUser(command.username(), id);
+        user.update(command);
+        return user;
     }
 
     //Delete: nie pozwalamy usunąć konta które należy do pacjenta
     @Transactional
-    public void deleteUser(String username) {
-        User user = findUserOrThrow(username);
-        if (patientRepository.existsByUserId(user.getId())) {
-            throw new UserAssignedToPatientException(
-                    "Użytkownik " + username + " jest przypisany do pacjenta i nie może zostać usunięty"
-            );
-        }
+    public void deleteUser(Long id) {
+        User user = findUserOrThrow(id);
+        validateUserNotAssignedToPatient(id);
         userRepository.delete(user);
+
     }
 
-    private User findUserOrThrow(String username) {
-        return userRepository.findByUsernameIgnoreCase(username)
-                .orElseThrow(() -> new UserNotFoundException(username));
-    }
-
-    private void validate(User user) {
-        if (isBlank(user.getUsername())) {
-            throw new UserValidationException("Nazwa użytkownika jest wymagana");
-        }
-        if (isBlank(user.getPassword())) {
-            throw new UserValidationException("Hasło jest wymagane");
+    private void validateUsernameNotTaken(String username) {
+        if (userRepository.existsByUsernameIgnoreCase(username)) {
+            throw new UserAlreadyExistsException(username);
         }
     }
 
-    private boolean isBlank(String value) {
-        return value == null || value.isBlank();
+    private void validateUsernameNotTakenByOtherUser(String username, Long id) {
+        if (userRepository.existsByUsernameIgnoreCaseAndIdNot(username, id)) {
+            throw new UserAlreadyExistsException(username);
+        }
+    }
+
+    private void validateUserNotAssignedToPatient(Long userId) {
+        if (patientRepository.existsByUserId(userId)) {
+            throw new UserAssignedToPatientException(userId);
+        }
+    }
+
+    private User findUserOrThrow(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException(id));
     }
 }

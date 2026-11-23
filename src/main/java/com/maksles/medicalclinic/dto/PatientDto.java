@@ -14,17 +14,4 @@ public record PatientDto(
         LocalDate birthday,
         UserResponse user
 ) {
-
-    public static PatientDto from(Patient patient) {
-        return new PatientDto(
-                patient.getId(),
-                patient.getEmail(),
-                patient.getIdCardNo(),
-                patient.getFirstName(),
-                patient.getLastName(),
-                patient.getPhoneNumber(),
-                patient.getBirthday(),
-                UserResponse.from(patient.getUser())
-        );
-    }
 }
