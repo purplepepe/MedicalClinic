@@ -1,0 +1,12 @@
+package com.maksles.medicalclinic.exception;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ResponseStatus;
+
+@ResponseStatus(HttpStatus.CONFLICT)
+public class UserAssignedToPatientException extends RuntimeException {
+
+    public UserAssignedToPatientException(Long userId) {
+        super("User with id " + userId + " is assigned to a patient");
+    }
+}
