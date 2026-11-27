@@ -8,6 +8,8 @@ import com.maksles.medicalclinic.exception.UserNotFoundException;
 import com.maksles.medicalclinic.model.User;
 import com.maksles.medicalclinic.repository.PatientRepository;
 import com.maksles.medicalclinic.repository.UserRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,9 +23,9 @@ public class UserService {
     private final UserRepository userRepository;
     private final PatientRepository patientRepository;
 
-    //Read: wszyscy userzy
-    public List<User> getUsers() {
-        return userRepository.findAll();
+    @Transactional(readOnly = true)
+    public Page<User> getUsers(Pageable pageable) {
+        return userRepository.findAll(pageable);
     }
 
     //Read: jeden user po nazwie

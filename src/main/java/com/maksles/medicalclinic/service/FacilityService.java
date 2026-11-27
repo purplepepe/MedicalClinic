@@ -4,7 +4,9 @@ import com.maksles.medicalclinic.dto.CreateFacilityCommand;
 import com.maksles.medicalclinic.exception.FacilityAlreadyExistsException;
 import com.maksles.medicalclinic.model.Facility;
 import com.maksles.medicalclinic.repository.FacilityRepository;
-import jakarta.transaction.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -16,9 +18,10 @@ public class FacilityService {
 
     private final FacilityRepository facilityRepository;
 
-    public List<Facility> getFacilities() {
-        return facilityRepository.findAll();
-    }
+   @Transactional(readOnly = true)
+   public Page<Facility> getFacilities(Pageable pageable) {
+       return facilityRepository.findAll(pageable);
+   }
 
     @Transactional
     public Facility addFacility(CreateFacilityCommand command) {

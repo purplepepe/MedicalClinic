@@ -1,10 +1,13 @@
 package com.maksles.medicalclinic.controller;
 
 import com.maksles.medicalclinic.dto.CreateVisitCommand;
+import com.maksles.medicalclinic.dto.PageDto;
 import com.maksles.medicalclinic.dto.VisitDto;
 import com.maksles.medicalclinic.mapper.VisitMapper;
 import com.maksles.medicalclinic.service.VisitService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,18 +23,14 @@ public class VisitController {
 
     // GET /visits
     @GetMapping
-    public List<VisitDto> getVisits() {
-        return visitService.getVisits().stream()
-                .map(visitMapper::toDto)
-                .toList();
+    public PageDto<VisitDto> getVisits(@PageableDefault(size = 20, sort = "startTime")Pageable pageable) {
+        return PageDto.from(visitService.getVisits(pageable).map(visitMapper::toDto));
     }
 
     // GET /visits/patients/5  - wszystkie umówione wizyty pacjenta
     @GetMapping("/patients/{patientId}")
-    public List<VisitDto> getPatientVisits(@PathVariable Long patientId) {
-        return visitService.getPatientVisits(patientId).stream()
-                .map(visitMapper::toDto)
-                .toList();
+    public PageDto<VisitDto> getPatientVisists(@PathVariable Long patientId, @PageableDefault(size = 20, sort = "startTime") Pageable pageable) {
+        return PageDto.from(visitService.getPatientVisits(patientId, pageable).map(visitMapper::toDto));
     }
 
     // POST /visits  (body: doctorId, startTime, endTime)

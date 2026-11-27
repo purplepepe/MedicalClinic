@@ -75,7 +75,7 @@ public class Patient {
         this.password = command.newPassword();
     }
 
-    public static void validate(CreatePatientCommand command) {
+    private static void validate(CreatePatientCommand command) {
         if (command.email() == null || command.email().isBlank()) {
             throw new ValidationException("Email is required");
         }

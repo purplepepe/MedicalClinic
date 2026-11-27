@@ -41,7 +41,7 @@ public class User {
         this.password = command.password();
     }
 
-    public static void validate(String username, String password) {
+    private static void validate(String username, String password) {
         if (username == null || username.isBlank()) {
             throw new ValidationException("Username is required");
         }

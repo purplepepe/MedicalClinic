@@ -1,11 +1,14 @@
 package com.maksles.medicalclinic.controller;
 
 import com.maksles.medicalclinic.dto.CreateUserCommand;
+import com.maksles.medicalclinic.dto.PageDto;
 import com.maksles.medicalclinic.dto.UpdateUserCommand;
 import com.maksles.medicalclinic.dto.UserDto;
 import com.maksles.medicalclinic.mapper.UserMapper;
 import com.maksles.medicalclinic.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,10 +23,8 @@ public class UserController {
     private final UserMapper userMapper;
 
     @GetMapping
-    public List<UserDto> getUsers() {
-        return userService.getUsers().stream()
-                .map(userMapper::toDto)
-                .toList();
+    public PageDto<UserDto> getUsers(@PageableDefault(size = 20, sort = "id")Pageable pageable){
+        return PageDto.from(userService.getUsers(pageable).map(userMapper::toDto));
     }
 
     @GetMapping("/{id}")

@@ -2,13 +2,16 @@ package com.maksles.medicalclinic.controller;
 
 import com.maksles.medicalclinic.dto.CreateFacilityCommand;
 import com.maksles.medicalclinic.dto.FacilityDto;
+import com.maksles.medicalclinic.dto.PageDto;
 import com.maksles.medicalclinic.mapper.FacilityMapper;
 import com.maksles.medicalclinic.service.FacilityService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+
 
 @RestController
 @RequestMapping("/facilities")
@@ -19,10 +22,8 @@ public class FacilityController {
     private final FacilityMapper facilityMapper;
 
     @GetMapping
-    public List<FacilityDto> getFacilities() {
-        return facilityService.getFacilities().stream()
-                .map(facilityMapper::toDto)
-                .toList();
+    public PageDto<FacilityDto> getFacilities(@PageableDefault(size = 20, sort = "id")Pageable pageable) {
+        return PageDto.from(facilityService.getFacilities(pageable).map(facilityMapper::toDto));
     }
 
     @PostMapping

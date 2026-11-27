@@ -8,10 +8,14 @@ import com.maksles.medicalclinic.model.Doctor;
 import com.maksles.medicalclinic.model.Facility;
 import com.maksles.medicalclinic.repository.DoctorRepository;
 import com.maksles.medicalclinic.repository.FacilityRepository;
-import jakarta.transaction.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import javax.print.Doc;
 import java.util.List;
 
 @Service
@@ -21,8 +25,11 @@ public class DoctorService {
     private final DoctorRepository doctorRepository;
     private final FacilityRepository facilityRepository;
 
-    public List<Doctor> getDoctors() {
-        return doctorRepository.findAll();
+    @Transactional(readOnly = true)
+    public Page<Doctor> getDoctors(Pageable pageable) {
+        Page<Long> ids = doctorRepository.findAllIds(pageable);
+        List<Doctor> doctors = doctorRepository.findAllByIdIn(ids.getContent(), pageable.getSort());
+        return new PageImpl<>(doctors, pageable, ids.getTotalElements());
     }
 
     @Transactional

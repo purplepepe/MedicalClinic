@@ -1,11 +1,13 @@
 package com.maksles.medicalclinic.repository;
 
 import com.maksles.medicalclinic.model.Visit;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.LocalDateTime;
-import java.util.List;
+
 
 public interface VisitRepository extends JpaRepository<Visit, Long> {
 
@@ -16,9 +18,9 @@ public interface VisitRepository extends JpaRepository<Visit, Long> {
     }
 
     @EntityGraph(attributePaths =  {"doctor", "patient"})
-    List<Visit> findAllByPatientIdOrderByStartTime(Long patientId);
+    Page<Visit> findAllByPatientId(Long patientId, Pageable pageable);
 
     @Override
     @EntityGraph(attributePaths = {"doctor", "patient"})
-    List<Visit> findAll();
+    Page<Visit> findAll(Pageable pageable);
 }

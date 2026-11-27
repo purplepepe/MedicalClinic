@@ -12,6 +12,8 @@ import com.maksles.medicalclinic.repository.DoctorRepository;
 import com.maksles.medicalclinic.repository.PatientRepository;
 import com.maksles.medicalclinic.repository.VisitRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,14 +27,15 @@ public class VisitService {
     private final DoctorRepository doctorRepository;
     private final PatientRepository patientRepository;
 
-    public List<Visit> getVisits() {
-        return visitRepository.findAll();
+    @Transactional(readOnly = true)
+    public Page<Visit> getVisits(Pageable pageable) {
+        return visitRepository.findAll(pageable);
     }
 
-    // wszystkie umówione wizyty pacjenta
-    public List<Visit> getPatientVisits(Long patientId) {
+    @Transactional(readOnly = true)
+    public Page<Visit> getPatientVisits(Long patientId, Pageable pageable) {
         validatePatientExists(patientId);
-        return visitRepository.findAllByPatientIdOrderByStartTime(patientId);
+        return visitRepository.findAllByPatientId(patientId, pageable);
     }
 
     // lekarz tworzy wolną wizytę (bez pacjenta)

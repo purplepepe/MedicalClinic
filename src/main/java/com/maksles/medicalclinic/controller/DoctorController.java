@@ -2,13 +2,16 @@ package com.maksles.medicalclinic.controller;
 
 import com.maksles.medicalclinic.dto.CreateDoctorCommand;
 import com.maksles.medicalclinic.dto.DoctorDto;
+import com.maksles.medicalclinic.dto.PageDto;
 import com.maksles.medicalclinic.mapper.DoctorMapper;
 import com.maksles.medicalclinic.service.DoctorService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+
 
 @RestController
 @RequestMapping("/doctors")
@@ -19,10 +22,8 @@ public class DoctorController {
     private final DoctorMapper doctorMapper;
 
     @GetMapping
-    public List<DoctorDto> getDoctors() {
-        return doctorService.getDoctors().stream()
-                .map(doctorMapper::toDto)
-                .toList();
+    public PageDto<DoctorDto> getDoctors(@PageableDefault(size = 20, sort = "id") Pageable pageable) {
+        return PageDto.from(doctorService.getDoctors(pageable).map(doctorMapper::toDto));
     }
 
     @PostMapping

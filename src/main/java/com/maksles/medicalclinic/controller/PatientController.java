@@ -1,16 +1,15 @@
 package com.maksles.medicalclinic.controller;
 
-import com.maksles.medicalclinic.dto.ChangePasswordCommand;
-import com.maksles.medicalclinic.dto.CreatePatientCommand;
-import com.maksles.medicalclinic.dto.PatientDto;
-import com.maksles.medicalclinic.dto.UpdatePatientCommand;
+import com.maksles.medicalclinic.dto.*;
 import com.maksles.medicalclinic.mapper.PatientMapper;
 import com.maksles.medicalclinic.service.PatientService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import org.springframework.data.domain.Pageable;
+
 
 @RestController
 @RequestMapping("/patients")
@@ -21,10 +20,9 @@ public class PatientController {
     private final PatientMapper patientMapper;
 
     @GetMapping
-    public List<PatientDto> getPatients() {
-        return patientService.getPatients().stream()
-                .map(patientMapper::toDto)
-                .toList();
+    public PageDto<PatientDto> getPatients(@PageableDefault(size = 20, sort = "id")
+    Pageable pageable) {
+        return PageDto.from(patientService.getPatients(pageable).map(patientMapper::toDto));
     }
 
     @GetMapping("/{id}")
