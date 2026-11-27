@@ -6,6 +6,8 @@ import com.maksles.medicalclinic.dto.UpdatePatientCommand;
 import com.maksles.medicalclinic.exception.InvalidPasswordException;
 import com.maksles.medicalclinic.exception.ValidationException;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -15,6 +17,7 @@ import java.time.LocalDate;
 @Table(name = "patients")
 @Getter
 @NoArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Patient {
 
     @Id
@@ -43,17 +46,8 @@ public class Patient {
     private User user;
 
     public static Patient create(CreatePatientCommand command) {
-        validate(command);
-
-        Patient patient = new Patient();
-        patient.email = command.email();
-        patient.password = command.password();
-        patient.idCardNo = command.idCardNo();
-        patient.firstName = command.firstName();
-        patient.lastName = command.lastName();
-        patient.phoneNumber = command.phoneNumber();
-        patient.birthday = command.birthday();
-        return patient;
+        return new Patient(null, command.email(), command.password(), command.idCardNo(), command.firstName(),
+                command.lastName(), command.phoneNumber(), command.birthday(), null);
     }
 
     public void assignUser(User user) {
@@ -73,21 +67,6 @@ public class Patient {
     public void changePassword(ChangePasswordCommand command) {
         validatePassword(command);
         this.password = command.newPassword();
-    }
-
-    private static void validate(CreatePatientCommand command) {
-        if (command.email() == null || command.email().isBlank()) {
-            throw new ValidationException("Email is required");
-        }
-        if (command.password() == null || command.password().isBlank()) {
-            throw new ValidationException("Password is required");
-        }
-        if (command.idCardNo() == null || command.idCardNo().isBlank()) {
-            throw new ValidationException("ID card number is required");
-        }
-        if (command.userId() == null) {
-            throw new ValidationException("User id is required");
-        }
     }
 
     private void validatePassword(ChangePasswordCommand command) {

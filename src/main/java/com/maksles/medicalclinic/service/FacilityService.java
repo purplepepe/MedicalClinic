@@ -18,10 +18,10 @@ public class FacilityService {
 
     private final FacilityRepository facilityRepository;
 
-   @Transactional(readOnly = true)
-   public Page<Facility> getFacilities(Pageable pageable) {
-       return facilityRepository.findAll(pageable);
-   }
+    @Transactional(readOnly = true)
+    public Page<Facility> getFacilities(Pageable pageable) {
+        return facilityRepository.findAll(pageable);
+    }
 
     @Transactional
     public Facility addFacility(CreateFacilityCommand command) {

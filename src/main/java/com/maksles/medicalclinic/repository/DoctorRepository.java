@@ -15,9 +15,9 @@ public interface DoctorRepository extends JpaRepository<Doctor, Long> {
 
     boolean existsByEmailIgnoreCase(String email);
 
-   @Query(value = "select d.id from Doctor d", countQuery = "select count(d) from Doctor d")
+    @Query(value = "select d.id from Doctor d", countQuery = "select count(d) from Doctor d")
     Page<Long> findAllIds(Pageable pageable);
 
-   @EntityGraph(attributePaths = "facilities")
+    @EntityGraph(attributePaths = "facilities")
     List<Doctor> findAllByIdIn(Collection<Long> ids, Sort sort);
 }

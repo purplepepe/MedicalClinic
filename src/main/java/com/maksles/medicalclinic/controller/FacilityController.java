@@ -12,7 +12,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 
-
 @RestController
 @RequestMapping("/facilities")
 @RequiredArgsConstructor
@@ -22,7 +21,7 @@ public class FacilityController {
     private final FacilityMapper facilityMapper;
 
     @GetMapping
-    public PageDto<FacilityDto> getFacilities(@PageableDefault(size = 20, sort = "id")Pageable pageable) {
+    public PageDto<FacilityDto> getFacilities(@PageableDefault(size = 20, sort = "id") Pageable pageable) {
         return PageDto.from(facilityService.getFacilities(pageable).map(facilityMapper::toDto));
     }
 

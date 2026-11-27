@@ -4,6 +4,8 @@ import com.maksles.medicalclinic.dto.CreateVisitCommand;
 import com.maksles.medicalclinic.exception.ValidationException;
 import com.maksles.medicalclinic.exception.VisitAlreadyBookedException;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -13,6 +15,7 @@ import java.time.LocalDateTime;
 @Table(name = "visits")
 @Getter
 @NoArgsConstructor   // wymagany przez JPA
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Visit {
 
     @Id
@@ -37,13 +40,7 @@ public class Visit {
     private LocalDateTime endTime;
 
     public static Visit create(CreateVisitCommand command, Doctor doctor) {
-        validate(command);
-
-        Visit visit = new Visit();
-        visit.doctor = doctor;
-        visit.startTime = command.startTime();
-        visit.endTime = command.endTime();
-        return visit;
+        return new Visit(null, doctor, null, command.startTime(), command.endTime());
     }
 
     public void assignPatient(Patient patient) {
@@ -54,25 +51,5 @@ public class Visit {
             throw new VisitAlreadyBookedException(this.id);
         }
         this.patient = patient;
-    }
-
-    private static void validate(CreateVisitCommand command) {
-        if (command.startTime() == null || command.endTime() == null) {
-            throw new ValidationException("Visit start and end time are required");
-        }
-        if (!command.startTime().isBefore(command.endTime())) {
-            throw new ValidationException("Visit start time must be before end time");
-        }
-        if (command.startTime().isBefore(LocalDateTime.now())) {
-            throw new ValidationException("Visit cannot start in the past");
-        }
-        validateFullQuarter(command.startTime(), "Start time");
-        validateFullQuarter(command.endTime(), "End time");
-    }
-
-    private static void validateFullQuarter(LocalDateTime time, String fieldName) {
-        if (time.getMinute() % 15 != 0 || time.getSecond() != 0 || time.getNano() != 0) {
-            throw new ValidationException(fieldName + " must be a full quarter hour (:00, :15, :30, :45)");
-        }
     }
 }

@@ -23,7 +23,7 @@ public class UserController {
     private final UserMapper userMapper;
 
     @GetMapping
-    public PageDto<UserDto> getUsers(@PageableDefault(size = 20, sort = "id")Pageable pageable){
+    public PageDto<UserDto> getUsers(@PageableDefault(size = 20, sort = "id") Pageable pageable) {
         return PageDto.from(userService.getUsers(pageable).map(userMapper::toDto));
     }
 

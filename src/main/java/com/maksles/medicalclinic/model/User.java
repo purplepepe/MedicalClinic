@@ -2,17 +2,17 @@ package com.maksles.medicalclinic.model;
 
 import com.maksles.medicalclinic.dto.CreateUserCommand;
 import com.maksles.medicalclinic.dto.UpdateUserCommand;
-import com.maksles.medicalclinic.exception.ValidationException;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Entity
 @Table(name = "users")
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor   // wymagany przez JPA
+@AllArgsConstructor(access = AccessLevel.PRIVATE)   // konstruktor tylko dla metody create
 public class User {
 
     @Id
@@ -26,27 +26,12 @@ public class User {
     private String password;
 
     public static User create(CreateUserCommand command) {
-        validate(command.username(), command.password());
-
-        User user = new User();
-        user.username = command.username();
-        user.password = command.password();
-        return user;
+        return new User(null, command.username(), command.password());
     }
 
+    // walidacja jest już w UpdateUserCommand
     public void update(UpdateUserCommand command) {
-        validate(command.username(), command.password());
-
         this.username = command.username();
         this.password = command.password();
-    }
-
-    private static void validate(String username, String password) {
-        if (username == null || username.isBlank()) {
-            throw new ValidationException("Username is required");
-        }
-        if (password == null || password.isBlank()) {
-            throw new ValidationException("Password is required");
-        }
     }
 }

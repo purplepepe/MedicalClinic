@@ -42,7 +42,7 @@ public class VisitService {
     @Transactional
     public Visit addVisit(CreateVisitCommand command) {
         Doctor doctor = findDoctorOrThrow(command.doctorId());
-        Visit visit = Visit.create(command, doctor);   // walidacja dat i pełnych kwadransów
+        Visit visit = Visit.create(command, doctor);
         validateNoOverlap(doctor.getId(), visit);
         return visitRepository.save(visit);
     }

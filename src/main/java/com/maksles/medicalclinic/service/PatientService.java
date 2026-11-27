@@ -43,18 +43,18 @@ public class PatientService {
         return patientRepository.save(patient);
     }
 
-@Transactional
-public Patient updatePatient(Long id, UpdatePatientCommand command) {
-    Patient patient = findPatientOrThrow(id);
-    patient.update(command);
-    return patient;
-}
+    @Transactional
+    public Patient updatePatient(Long id, UpdatePatientCommand command) {
+        Patient patient = findPatientOrThrow(id);
+        patient.update(command);
+        return patient;
+    }
 
-@Transactional
-public void changePassword(Long id, ChangePasswordCommand command) {
-    Patient patient = findPatientOrThrow(id);
-    patient.changePassword(command);
-}
+    @Transactional
+    public void changePassword(Long id, ChangePasswordCommand command) {
+        Patient patient = findPatientOrThrow(id);
+        patient.changePassword(command);
+    }
 
     @Transactional
     public void deletePatient(Long id) {

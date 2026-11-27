@@ -14,10 +14,10 @@ public interface VisitRepository extends JpaRepository<Visit, Long> {
     boolean existsByDoctorIdAndStartTimeBeforeAndEndTimeAfter(Long doctorId, LocalDateTime endTime, LocalDateTime startTime);
 
     default boolean existsOverlappingVisit(Long doctorId, LocalDateTime startTime, LocalDateTime endTime) {
-        return  existsByDoctorIdAndStartTimeBeforeAndEndTimeAfter(doctorId, endTime, startTime);
+        return existsByDoctorIdAndStartTimeBeforeAndEndTimeAfter(doctorId, endTime, startTime);
     }
 
-    @EntityGraph(attributePaths =  {"doctor", "patient"})
+    @EntityGraph(attributePaths = {"doctor", "patient"})
     Page<Visit> findAllByPatientId(Long patientId, Pageable pageable);
 
     @Override

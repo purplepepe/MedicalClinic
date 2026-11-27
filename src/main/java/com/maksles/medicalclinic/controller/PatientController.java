@@ -2,13 +2,14 @@ package com.maksles.medicalclinic.controller;
 
 import com.maksles.medicalclinic.dto.*;
 import com.maksles.medicalclinic.mapper.PatientMapper;
+import com.maksles.medicalclinic.mapper.VisitMapper;
 import com.maksles.medicalclinic.service.PatientService;
+import com.maksles.medicalclinic.service.VisitService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-
-import org.springframework.data.domain.Pageable;
 
 
 @RestController
@@ -18,6 +19,8 @@ public class PatientController {
 
     private final PatientService patientService;
     private final PatientMapper patientMapper;
+    private final VisitService visitService;
+    private final VisitMapper visitMapper;
 
     @GetMapping
     public PageDto<PatientDto> getPatients(@PageableDefault(size = 20, sort = "id")
@@ -28,6 +31,13 @@ public class PatientController {
     @GetMapping("/{id}")
     public PatientDto getPatient(@PathVariable Long id) {
         return patientMapper.toDto(patientService.getPatient(id));
+    }
+
+    // GET /patients/5/visits?page=0&size=20  - umówione wizyty pacjenta
+    @GetMapping("/{id}/visits")
+    public PageDto<VisitDto> getPatientVisits(@PathVariable Long id,
+                                              @PageableDefault(size = 20, sort = "startTime") Pageable pageable) {
+        return PageDto.from(visitService.getPatientVisits(id, pageable).map(visitMapper::toDto));
     }
 
     @PostMapping

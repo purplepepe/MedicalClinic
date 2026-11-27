@@ -23,14 +23,8 @@ public class VisitController {
 
     // GET /visits
     @GetMapping
-    public PageDto<VisitDto> getVisits(@PageableDefault(size = 20, sort = "startTime")Pageable pageable) {
+    public PageDto<VisitDto> getVisits(@PageableDefault(size = 20, sort = "startTime") Pageable pageable) {
         return PageDto.from(visitService.getVisits(pageable).map(visitMapper::toDto));
-    }
-
-    // GET /visits/patients/5  - wszystkie umówione wizyty pacjenta
-    @GetMapping("/patients/{patientId}")
-    public PageDto<VisitDto> getPatientVisists(@PathVariable Long patientId, @PageableDefault(size = 20, sort = "startTime") Pageable pageable) {
-        return PageDto.from(visitService.getPatientVisits(patientId, pageable).map(visitMapper::toDto));
     }
 
     // POST /visits  (body: doctorId, startTime, endTime)
